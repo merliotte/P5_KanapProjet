@@ -1,19 +1,19 @@
+// RECUPERER LES INFORMATIONS DU LOCALSTORAGE
 function getIdFromLocalStorage (arrayCartItems){
     return arrayCartItems.map(item => item.id);
-     
-}
-
+};
+// RECUPERER L'OBJET ET LE STOCK 
 async function fetchProduct(kanapId) {
     try {
         const kanap = await fetch(`http://localhost:3000/api/products/${kanapId}`)
         const promessdata = kanap.json()
-    return promessdata;
+        return promessdata;
 }
     catch (error) {
         console.error(error.message);
     } 
-}
-// salut /
+};
+// RECUPERER ET CREER UN TABLEAU 
 async function getProductFromApi (arrayStringId, arrayCartItems) {
     return await Promise.all(
         await arrayStringId.map(async (id, index) => {
@@ -24,8 +24,15 @@ async function getProductFromApi (arrayStringId, arrayCartItems) {
            }
         })
     )
+};
+async function getasyncfunction(arraystringID, arrayitems) {
+    return await Primise.all (
+      await arraystringID.map(async(id, index) => {
+        const kanap = await fetchProdcut(id)
+      })
+    )
 }
-
+// CREER DES ARTICLES HTML 
 function renderKanapDataIntoHtml(kanapArray) {
     const articlesContainer = document.getElementById('cart__items');
     // Efface le HTML de base 
@@ -59,8 +66,9 @@ function renderKanapDataIntoHtml(kanapArray) {
             `;   
       articlesContainer.appendChild(article);
     }
-    );     
-    changementQuantity(kanapArray);
+    ); 
+    controlQuantity();
+    changementQuantity(kanapArray);  
   };
 // Supprime un Element au click 
 const deleteElement =  (deleteButtons) => {
