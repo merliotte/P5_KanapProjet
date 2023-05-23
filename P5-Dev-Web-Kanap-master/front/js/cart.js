@@ -58,26 +58,28 @@ function renderKanapDataIntoHtml(kanapArray) {
             </div>
             `;   
       articlesContainer.appendChild(article);
-        }
-    ); 
+    }
+    );     
+    changementQuantity(kanapArray);
   };
 // Supprime un Element au click 
-  const deleteElement =  (deleteButtons) => {
-    const cartItemsStorage = JSON.parse(localStorage.getItem('cartItems'));
-    deleteButtons.forEach((button) => {
-        button.addEventListener("click", (arrayKanaps) => {
-            // Cible le contenu supprimez 
-            const articleElement = button.closest(".cart__item");
-            articleElement.parentNode.removeChild(articleElement);
-            // Supprime l'élément dans le localStorage
-            const index = cartItemsStorage.findIndex(item => item.id);
+const deleteElement =  (deleteButtons) => {
+  const cartItemsStorage = JSON.parse(localStorage.getItem('cartItems'));
+    deleteButtons.forEach((button, index) => {
+      button.addEventListener("click", () => {
+        try {
+          const articleElement = button.closest(".cart__item");
             cartItemsStorage.splice(index, 1);
             localStorage.setItem('cartItems', JSON.stringify(cartItemsStorage));
-            location.reload();
-       });
-     });
+          // Cible le contenu supprimez 
+            articleElement.parentNode.removeChild(articleElement);
+            totalQuantity(cartItemsStorage);
+        } catch (error) {
+          console.error("Erreur du chargement du LocalStorage", error);
+        }
+      });
+    });
 };
-
 // Controle du changement de la quantité indiqué
 const changementQuantity = (arrayKanaps) => {
     const inputQuantity = document.querySelectorAll('.itemQuantity');
@@ -85,27 +87,27 @@ const changementQuantity = (arrayKanaps) => {
     inputQuantity.forEach((inputValue, index) => {
         inputValue.addEventListener("change", (event) => {
             try {
-              updateAfterQuantityChange(index, parseInt(event.target.value),arrayKanaps);
-              totalQuantity(arrayKanaps);
-              totalPrice(arrayKanaps);
               controlQuantity(arrayKanaps);
+              const newCartQuantityItems = updateAfterQuantityChange(index, parseInt(event.target.value),arrayKanaps);
+              totalQuantity(newCartQuantityItems);
+              totalPrice(arrayKanaps);
+              renderKanapDataIntoHtml(arrayKanaps);
             } catch (error) {
                 console.error("Erreur du chargement du LocalStorage", error);
             }
         });
     });
 };
-// Permet de mettre à jour la quantité
-function updateAfterQuantityChange(index, newQuantity, arrayKanap) {
+// PERMET DE METTRE A JOUR LA QUANTITE
+function updateAfterQuantityChange(index, newQuantity,arrayKanaps) {
     const cartItems = JSON.parse(localStorage.getItem("cartItems"));
   
     cartItems[index].quantity = newQuantity;
-    arrayKanap[index].quantity = newQuantity;
-    
-    localStorage.setItem('cartItems', JSON.stringify(cartItems));
-    return arrayKanap; 
-}
+    arrayKanaps[index].quantity = newQuantity;
 
+    localStorage.setItem('cartItems', JSON.stringify(cartItems));
+    return cartItems; 
+}
 // Calcul du Total quantité
 function totalQuantity(arrayKanaps) {
   const totalArticleElement = document.getElementById('totalQuantity');
@@ -116,39 +118,43 @@ function totalQuantity(arrayKanaps) {
 
   totalArticleElement.textContent = totalArticles;
 }
-
 // Calcul du Total du Prix 
 const totalPrice = (arrayKanaps) => {
-    const totalquantityItems = document.querySelector("#totalPrice")
-    let totalQuantity = 0;
+    const totalPriceItem = document.querySelector("#totalPrice")
+    let totalPriceItems = 0;
 
     arrayKanaps.forEach((kanap) => {
-            totalQuantity += parseInt((kanap.price)*(kanap.quantity)) ;
+            totalPriceItems += parseInt((kanap.price)*(kanap.quantity)) ;
     });
-    totalquantityItems.textContent = totalQuantity.toFixed(2);
+    totalPriceItem.textContent = totalPriceItems.toFixed(2);
+
 }
 // Controle les données mis par l'utilisateur dans l'input 
 function controlQuantity() {
-  const inputQuantity = document.querySelector('.itemQuantity');
+  const inputQuantityList = document.querySelectorAll('.itemQuantity');
 
-  inputQuantity.addEventListener("input", (event) => {
-    const value = parseInt(event.target.value ); 
+  inputQuantityList.forEach((inputQuantity) => {
+    inputQuantity.addEventListener("input", (event) => {
+      const value = parseInt(event.target.value);
 
-    if (value < 0 || value > 100) {
-      event.target.value = Math.max(0, Math.min(100,value));
-    }
-    controlQuantityTest();
-  });
-};
-
-const controlQuantityTest = () => {
-  const inputQuantity = document.querySelector(".itemQuantity");
-
-  inputQuantity.addEventListener("input", (event) => {
-    event.target.value = event.target.value.replace(/\D/g, '');
-
+      if (value < 0 || value > 100) {
+        event.target.value = Math.max(0, Math.min(100, value));
+      }
+      controlQuantityTest();
+    });
   });
 }
+
+
+const controlQuantityTest = () => {
+  const inputQuantity = document.querySelectorAll(".itemQuantity");
+
+  inputQuantity.forEach((inputQuantityTest) => {
+    inputQuantityTest.addEventListener("input", (event) => {
+      event.target.value = event.target.value.replace(/\D/g, '');
+    });
+  });
+};
 
 // Test si un champ et vide et lui change sa couleur lors du remplissage
 function testInData(element) {
@@ -345,14 +351,12 @@ async function main () {
         const renderContainer  = renderKanapDataIntoHtml(arrayKanaps);
 
         const deleteButtons = document.querySelectorAll(".deleteItem");
-
         deleteElement(deleteButtons, arrayKanaps);
 
         totalQuantity(arrayKanaps);
+        totalPrice(arrayKanaps);
 
         controlQuantity(totalQuantity); 
-
-        totalPrice(arrayKanaps);
 
         testFieldsIsEmpty();
         
