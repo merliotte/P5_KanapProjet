@@ -83,53 +83,37 @@ const deleteElement =  (deleteButtons) => {
       });
     });
 };
-// Controle du changement de la quantité indiqué
-// const changementQuantity = (arrayKanaps) => {
-//     const inputQuantity = document.querySelectorAll('.itemQuantity');
-//     inputQuantity.forEach((inputValue, index) => {
-//         inputValue.addEventListener("change", (event) => {
-//             try {
-//               // controlQuantity(arrayKanaps);
-//               const newCartQuantityItems = updateAfterQuantityChange(index, parseInt(event.target.value),arrayKanaps);
-//               totalQuantity(newCartQuantityItems);
-//               totalPrice(arrayKanaps);
-//             } catch (error) {
-//                 console.error("Erreur du chargement du LocalStorage", error);
-//             }
-//         });
-//     });
-// };
 const changementQuantity = (arrayKanaps) => {
   arrayKanaps.forEach((canap) => {
     const input = document.getElementById(`input-${canap.id}`);
-     input.addEventListener("change", (event) => {
+    input.addEventListener("change", (event) => {
       try {
-        const newPriceKanap = event.target.value * canap.price;
-        console.log(canap);
-        // Pour le prix total faire newPricekanap + la somme des prix totaux de chaques kanap excepté celui en cours
-        const totalPriceId = document.getElementById(`totalprice-${canap.id}`);
-        totalPriceId.textContent = `Prix Total : ${newPriceKanap} €`;
-        updateAfterQuantityChange(canap.id, parseInt(event.target.value),arrayKanaps);
-        totalPrice(arrayKanaps)
-        totalQuantity(arrayCartItems);
+        const updateTotalPrice = document.getElementById("totalPrice");
+        const newQuantity = parseInt(event.target.value);
+
+        // Mettre à jour la quantité du kanap
+        canap.quantity = newQuantity;
+
+        // Calculer le nouveau prix total
+        const totalPriceItems = arrayKanaps.reduce((total, kanap) => {
+          return total + kanap.price * kanap.quantity;
+        }, 0);
+
+        updateTotalPrice.textContent = totalPriceItems.toFixed(2);
+        totalQuantity(arrayKanaps);
+
+        // Mettre à jour le prix total pour le kanap en cours
+        const totalPriceDivKanap = document.getElementById(`totalprice-${canap.id}`);
+        totalPriceDivKanap.textContent = `Prix Total : ${(canap.price * canap.quantity)} €`;
+
+        // Effectuer d'autres mises à jour nécessaires
+        updateAfterQuantityChange(canap.id, newQuantity, arrayKanaps);
       } catch (error) {
-          console.error("Erreur du chargement du LocalStorage", error);
+        console.error("Erreur lors de la mise à jour du LocalStorage", error);
       }
     });
   });
-}
-
-// PERMET DE METTRE A JOUR LA QUANTITE
-// function updateAfterQuantityChange(index, newQuantity,arrayKanaps) {
-//     const cartItems = JSON.parse(localStorage.getItem("cartItems"));
-  
-//     cartItems[index].quantity = newQuantity;
-//     arrayKanaps[index].quantity = newQuantity;
-
-//     localStorage.setItem('cartItems', JSON.stringify(cartItems));
-//     return cartItems; 
-// }
-
+};
 
 function updateAfterQuantityChange(kanapId, newQuantity,arrayKanaps) {
     const cartItems = JSON.parse(localStorage.getItem("cartItems"));
