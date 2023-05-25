@@ -50,7 +50,7 @@ function renderKanapDataIntoHtml(kanapArray) {
               <div class="cart__item__content__settings">
                 <div class="cart__item__content__settings__quantity">
                   <p>Quantité :</p>
-                  <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${canap.quantity}">
+                  <input type="number" class="itemQuantity" id="input-${canap.id}" name="itemQuantity" min="1" max="100" value="${canap.quantity}">
                 </div>
                 <div class="cart__item__content__settings__delete">
                   <p class="deleteItem">Supprimer</p>
@@ -77,7 +77,7 @@ const deleteElement =  (deleteButtons) => {
 
           // Cible le contenu supprimez 
             articleElement.parentNode.removeChild(articleElement);
-
+            totalPrice(arrayKanaps);
             totalQuantity(cartItemsStorage);
         } catch (error) {
           console.error("Erreur du chargement du LocalStorage", error);
@@ -85,36 +85,60 @@ const deleteElement =  (deleteButtons) => {
       });
     });
 };
-// Controle du changement de la quantité indiqué
 const changementQuantity = (arrayKanaps) => {
-    const inputQuantity = document.querySelectorAll('.itemQuantity');
-    inputQuantity.forEach((inputValue, index) => {
-        inputValue.addEventListener("change", (event) => {
-            try {
-              // controlQuantity(arrayKanaps);
+  arrayKanaps.forEach((canap) => {
+    const input = document.getElementById(`input-${canap.id}`);
+    input.addEventListener("change", (event) => {
+      try {
+        const updateTotalPrice = document.getElementById("totalPrice");
+        const newQuantity = parseInt(event.target.value);
 
-              const newCartQuantityItems = updateAfterQuantityChange(index, parseInt(event.target.value),arrayKanaps);
-              totalQuantity(newCartQuantityItems);
-              totalPrice(arrayKanaps);
-              totalPriceDivKanap(arrayKanaps);
-            } catch (error) {
-                console.error("Erreur du chargement du LocalStorage", error);
-            }
-        });
+        // Mettre à jour la quantité du kanap
+        canap.quantity = newQuantity;
+
+        // Calculer le nouveau prix total
+        const newPrice = arrayKanaps.reduce((total, kanap) => {
+          return total + kanap.price * kanap.quantity;
+        }, 0);
+
+        updateTotalPrice.textContent = newPrice.toFixed(2);
+        totalQuantity(arrayKanaps);
+
+        const totalPriceDivKanap = document.getElementById(`totalprice-${canap.id}`);
+        totalPriceDivKanap.textContent = `Prix Total : ${(canap.price * canap.quantity)} €`;
+
+        updateAfterQuantityChange(canap.id, newQuantity, arrayKanaps);
+        const newCartQuantityItems = updateQuantityPriceChange(canap.id, newQuantity,arrayKanaps);
+        totalQuantity(newCartQuantityItems);
+
+      } catch (error) {
+        console.error("Erreur lors de la mise à jour du LocalStorage", error);
+      }
     });
+  });
 };
+function updateQuantityPriceChange(index, newQuantity,arrayKanaps) {
+  const cartItems = JSON.parse(localStorage.getItem("cartItems"));
 
-// PERMET DE METTRE A JOUR LA QUANTITE
-function updateAfterQuantityChange(index, newQuantity,arrayKanaps) {
+  arrayKanaps[index].quantity = newQuantity;
+
+  localStorage.setItem('cartItems', JSON.stringify(cartItems));
+  return cartItems; 
+};
+function updateAfterQuantityChange(kanapId, newQuantity) {
     const cartItems = JSON.parse(localStorage.getItem("cartItems"));
-  
-    cartItems[index].quantity = newQuantity;
-    arrayKanaps[index].quantity = newQuantity;
-
-    localStorage.setItem('cartItems', JSON.stringify(cartItems));
-    return cartItems; 
+    const kanapLocal = cartItems.find(item => item.id === kanapId);
+    const newKanap = {
+      ...kanapLocal,
+      quantity : newQuantity,
+    };
+    const localStorageWithoutKanaptarget = cartItems.filter(item => item.id !== kanapId)
+    localStorage.setItem('cartItems', JSON.stringify(
+      [...localStorageWithoutKanaptarget,
+        newKanap
+      ]
+    ));
 };
-
 // Calcul du Total quantité
 function totalQuantity(arrayKanaps) {
   const totalArticleElement = document.getElementById('totalQuantity');
@@ -124,29 +148,14 @@ function totalQuantity(arrayKanaps) {
   }, 0);
 
   totalArticleElement.textContent = totalArticles;
-};
+}
 // Calcul du Total du Prix 
 const totalPrice = (arrayKanaps) => {
-    const totalPriceItem = document.querySelector("#totalPrice");
-    const totalPrice = 0 ;
-    const totalPriceItems = arrayKanaps.reduce((total,kanap) => {
-      return total + kanap.quantity * kanap.price;
-    },totalPrice);
+    const totalPriceItem = document.querySelector("#totalPrice")
+    const totalPriceItems = arrayKanaps.reduce((total, kanap) => {
+     return total + kanap.price * kanap.quantity
+   }, 0);
     totalPriceItem.textContent = totalPriceItems.toFixed(2);
-};
-// PERMET DE METTRE A JOUR LE PRIX TOTAL
-const totalPriceDivKanap = (arrayKanaps) => {
-  arrayKanaps.forEach((canap) => {
-    const totalPriceDiv = document.getElementById(`totalprice-${canap.id}`)
-    totalPriceDiv.textContent = `Prix Total : ${(canap.price)*(canap.quantity)} €`;
-  });
-};
-
-const displayCartFull = (arrayKanaps) => {
-  const basketElement = document.querySelector("li"); 
-  if (arrayKanaps.length > 0) {
-    basketElement.classList.cssText = "red"; 
-  }
 };
 // Controle les données mis par l'utilisateur dans l'input 
 function controlQuantity() {
@@ -162,7 +171,7 @@ function controlQuantity() {
       controlQuantityTest();
     });
   });
-};
+}
 
 
 const controlQuantityTest = () => {
@@ -202,7 +211,7 @@ function testInData(element) {
 			}
 		}
 	}
-};
+}
 
 // Test Si le champ est vide le met en évidence en rouge
 const testFieldsIsEmpty = () => {
@@ -251,13 +260,13 @@ const testFieldsIsEmpty = () => {
 		}
 	});
 	return pass;
-};
+}
 
 function addFormSubmitListener() {
     // Ajouter un gestionnaire d'événements "submit" au formulaire
     const form = document.querySelector('.cart__order__form');
     form.addEventListener('submit', submitForm);
-  };
+  }
   
   function submitForm(event) {
     event.preventDefault(); // Empêche la page de se recharger
@@ -299,7 +308,7 @@ function addFormSubmitListener() {
       .catch(error => {
         console.error('Erreur lors de l\'envoi de la commande:', error);
       });
-  };
+  }
   
 function listIDs(arrayKanap) {
     let ids = [];
@@ -309,14 +318,14 @@ function listIDs(arrayKanap) {
       });
     }
     return ids;
-  };
+  }
   
   
 function theBasketIsEmpty() {
     const parent = document.querySelector('#mess-oblig');
     parent.style.cssText = 'color: #82FA58; font-weight: bold; border-style: solid; border-color: #E3F6CE; background: #3d4c68; padding: 10px; border-radius: 15px; text-align: center;';
     parent.textContent = 'Votre panier est vide';
-};
+}
  const controlEmail = () => {
     const mailElement = document.querySelector("#email");
 	const regex = new RegExp(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/i);
@@ -339,13 +348,13 @@ function theBasketIsEmpty() {
         elem.classList.remove('error');
     return true;
 
-};
+}
 
 function testValidityForm(parent) {
 	let textTemp = parent.value;
     const newStr = textTemp.replace(/[^A-Za-z\s]/g, "");
         parent.value = newStr;
-};
+}
 const orderButton = () => {
         const orderButtonSelector = document.querySelector("#order");
             orderButtonSelector.addEventListener('click', (order) => submitForm(order));
@@ -382,8 +391,6 @@ async function main () {
         changementQuantity(arrayKanaps);
 
         addFormSubmitListener();
-        
-        displayCartFull(arrayKanaps);
 
         listIDs(arrayKanaps);
 
@@ -391,5 +398,5 @@ async function main () {
     } catch (error) {
         console.log(error);
     }
-};
+}
 main();

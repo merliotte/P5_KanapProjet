@@ -68,15 +68,18 @@ function renderKanapDataIntoHtml(kanapArray) {
 // Supprime un Element au click 
 const deleteElement =  (deleteButtons) => {
   const cartItemsStorage = JSON.parse(localStorage.getItem('cartItems'));
+
     deleteButtons.forEach((button, index) => {
       button.addEventListener("click", () => {
         try {
           const articleElement = button.closest(".cart__item");
             cartItemsStorage.splice(index, 1);
             localStorage.setItem('cartItems', JSON.stringify(cartItemsStorage));
+
           // Cible le contenu supprimez 
             articleElement.parentNode.removeChild(articleElement);
             totalQuantity(cartItemsStorage);
+
         } catch (error) {
           console.error("Erreur du chargement du LocalStorage", error);
         }
@@ -101,7 +104,7 @@ const changementQuantity = (arrayKanaps) => {
 
         updateTotalPrice.textContent = totalPriceItems.toFixed(2);
         totalQuantity(arrayKanaps);
-
+        totalPrice(arrayKanaps);
         // Mettre à jour le prix total pour le kanap en cours
         const totalPriceDivKanap = document.getElementById(`totalprice-${canap.id}`);
         totalPriceDivKanap.textContent = `Prix Total : ${(canap.price * canap.quantity)} €`;
@@ -115,7 +118,7 @@ const changementQuantity = (arrayKanaps) => {
   });
 };
 
-function updateAfterQuantityChange(kanapId, newQuantity,arrayKanaps) {
+function updateAfterQuantityChange(kanapId, newQuantity) {
     const cartItems = JSON.parse(localStorage.getItem("cartItems"));
     const kanapLocal = cartItems.find(item => item.id === kanapId);
     const newKanap = {
@@ -128,7 +131,7 @@ function updateAfterQuantityChange(kanapId, newQuantity,arrayKanaps) {
         newKanap
       ]
     ));
-}
+};
 // Calcul du Total quantité
 function totalQuantity(arrayKanaps) {
   const totalArticleElement = document.getElementById('totalQuantity');
