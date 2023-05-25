@@ -1,8 +1,13 @@
+// ---------------------------------------------------------------
 // RECUPERER LES INFORMATIONS DU LOCALSTORAGE
+// ---------------------------------------------------------------
 function getIdFromLocalStorage (arrayCartItems){
     return arrayCartItems.map(item => item.id);
 };
-// RECUPERER L'OBJET ET LE STOCK 
+
+// ---------------------------------------------------------------
+// RECUPERER L'OBJET DANS L'API ET LE STOCK 
+// ---------------------------------------------------------------
 async function fetchProduct(kanapId) {
     try {
         const kanap = await fetch(`http://localhost:3000/api/products/${kanapId}`)
@@ -13,7 +18,10 @@ async function fetchProduct(kanapId) {
         console.error(error.message);
     } 
 };
+
+// ---------------------------------------------------------------
 // RECUPERER ET CREER UN TABLEAU 
+// ---------------------------------------------------------------
 async function getProductFromApi (arrayStringId, arrayCartItems) {
     return await Promise.all(
         await arrayStringId.map(async (id, index) => {
@@ -25,17 +33,18 @@ async function getProductFromApi (arrayStringId, arrayCartItems) {
         })
     )
 };
-
+// ---------------------------------------------------------------
 // CREER DES ARTICLES HTML 
+// ---------------------------------------------------------------
 function renderKanapDataIntoHtml(kanapArray) {
     const articlesContainer = document.getElementById('cart__items');
-    // Efface le HTML de base 
-    articlesContainer.innerHTML= '';
+      articlesContainer.innerHTML= '';
+
     kanapArray.forEach((canap) => {
         const article = document.createElement('article');
-        article.classList.add( 'cart__item');
-        article.setAttribute ("data-id", canap.id);
-        article.setAttribute ("data-color", canap.color);
+            article.classList.add( 'cart__item');
+            article.setAttribute ("data-id", canap.id);
+            article.setAttribute ("data-color", canap.color);
             article.innerHTML += `
             <div class="cart__item__img">
               <img src="${canap.imageUrl}" alt="${canap.altTxt}">
@@ -64,7 +73,10 @@ function renderKanapDataIntoHtml(kanapArray) {
     controlQuantity();
     changementQuantity(kanapArray);  
   };
-// Supprime un Element au click 
+
+// ---------------------------------------------------------------
+// SUPPRIME UN ELEMENT AU CLICK
+// ---------------------------------------------------------------
 const deleteElement =  (deleteButtons) => {
   const cartItemsStorage = JSON.parse(localStorage.getItem('cartItems'));
 
@@ -85,18 +97,19 @@ const deleteElement =  (deleteButtons) => {
       });
     });
 };
-// Controle du changement de la quantité indiqué
+
+// ---------------------------------------------------------------
+// PERMET DE METTRE A JOUR LA QUANTITE/PRIX AU CHANGEMENT DE INPUT
+// ---------------------------------------------------------------
 const changementQuantity = (arrayKanaps) => {
     const inputQuantity = document.querySelectorAll('.itemQuantity');
-    inputQuantity.forEach((inputValue, index) => {
+      inputQuantity.forEach((inputValue, index) => {
         inputValue.addEventListener("change", (event) => {
             try {
-              // controlQuantity(arrayKanaps);
-
               const newCartQuantityItems = updateAfterQuantityChange(index, parseInt(event.target.value),arrayKanaps);
-              totalQuantity(newCartQuantityItems);
-              totalPrice(arrayKanaps);
-              totalPriceDivKanap(arrayKanaps);
+                totalQuantity(newCartQuantityItems);
+                totalPrice(arrayKanaps);
+                totalPriceDivKanap(arrayKanaps);
             } catch (error) {
                 console.error("Erreur du chargement du LocalStorage", error);
             }
@@ -104,18 +117,21 @@ const changementQuantity = (arrayKanaps) => {
     });
 };
 
+// ---------------------------------------------------------------
 // PERMET DE METTRE A JOUR LA QUANTITE
+// ---------------------------------------------------------------
 function updateAfterQuantityChange(index, newQuantity,arrayKanaps) {
     const cartItems = JSON.parse(localStorage.getItem("cartItems"));
   
-    cartItems[index].quantity = newQuantity;
-    arrayKanaps[index].quantity = newQuantity;
+      cartItems[index].quantity = newQuantity;
+      arrayKanaps[index].quantity = newQuantity;
 
     localStorage.setItem('cartItems', JSON.stringify(cartItems));
     return cartItems; 
 };
-
-// Calcul du Total quantité
+// ---------------------------------------------------------------
+// CALCUL DU TOTAL QUANTITY
+// ---------------------------------------------------------------
 function totalQuantity(arrayKanaps) {
   const totalArticleElement = document.getElementById('totalQuantity');
 
@@ -125,30 +141,42 @@ function totalQuantity(arrayKanaps) {
 
   totalArticleElement.textContent = totalArticles;
 };
-// Calcul du Total du Prix 
+// ---------------------------------------------------------------
+// CALCUL LE TOTAL DU PRIX 
+// ---------------------------------------------------------------
 const totalPrice = (arrayKanaps) => {
     const totalPriceItem = document.querySelector("#totalPrice");
     const totalPrice = 0 ;
     const totalPriceItems = arrayKanaps.reduce((total,kanap) => {
       return total + kanap.quantity * kanap.price;
     },totalPrice);
+    if (totalPriceItem === NaN) {
+      totalPriceItem.textContent == 0;
+    }
     totalPriceItem.textContent = totalPriceItems.toFixed(2);
 };
+
+// ---------------------------------------------------------------
 // PERMET DE METTRE A JOUR LE PRIX TOTAL
+// ---------------------------------------------------------------
 const totalPriceDivKanap = (arrayKanaps) => {
   arrayKanaps.forEach((canap) => {
     const totalPriceDiv = document.getElementById(`totalprice-${canap.id}`)
-    totalPriceDiv.textContent = `Prix Total : ${(canap.price)*(canap.quantity)} €`;
+      totalPriceDiv.textContent = `Prix Total : ${(canap.price)*(canap.quantity)} €`;
   });
 };
 
 const displayCartFull = (arrayKanaps) => {
   const basketElement = document.querySelector("li"); 
   if (arrayKanaps.length > 0) {
-    basketElement.classList.cssText = "red"; 
+    basketElement.classList.cssText = "color: red"; 
   }
 };
-// Controle les données mis par l'utilisateur dans l'input 
+
+// ---------------------------------------------------------------
+// PERMET DE CONTROLER SI LA VALEUR EST COMPRISE ENTRE 1 ET 100 
+// ---------------------------------------------------------------
+
 function controlQuantity() {
   const inputQuantityList = document.querySelectorAll('.itemQuantity');
 
@@ -164,6 +192,10 @@ function controlQuantity() {
   });
 };
 
+// ---------------------------------------------------------------
+// PERMET DE CONTROLER SI LA VALEUR EST UN ENTIER
+// ---------------------------------------------------------------
+
 
 const controlQuantityTest = () => {
   const inputQuantity = document.querySelectorAll(".itemQuantity");
@@ -175,7 +207,10 @@ const controlQuantityTest = () => {
   });
 };
 
-// Test si un champ et vide et lui change sa couleur lors du remplissage
+// ---------------------------------------------------------------
+// PERMET DE TESTER SI UN CHAMP EST VIDE ET LUI CHANGE SA COULEUR
+// ---------------------------------------------------------------
+
 function testInData(element) {
 	if (element.id != 'order') {
 		if (element.value === '') {
@@ -203,14 +238,15 @@ function testInData(element) {
 		}
 	}
 };
-
-// Test Si le champ est vide le met en évidence en rouge
+// ---------------------------------------------------------------
+// PERMET DE TESTER SI LE CHAMP EST VIDE 
+// ---------------------------------------------------------------
 const testFieldsIsEmpty = () => {
 	const form = document.querySelector('.cart__order__form');
 	const inputs = form.querySelectorAll('input');
 	let pass = true;
-	inputs.forEach((element) => {
-		element.addEventListener('input', () => testInData(element));
+    inputs.forEach((element) => {
+      element.addEventListener('input', () => testInData(element));
 
 		switch (element.id) {
 			case 'firstName': {
@@ -253,35 +289,39 @@ const testFieldsIsEmpty = () => {
 	return pass;
 };
 
+// ---------------------------------------------------------------
+// PERMET D'AJOUTER SUBMIT AU FORMULAIRE 
+// ---------------------------------------------------------------
 function addFormSubmitListener() {
-    // Ajouter un gestionnaire d'événements "submit" au formulaire
     const form = document.querySelector('.cart__order__form');
-    form.addEventListener('submit', submitForm);
+      form.addEventListener('submit', submitForm);
   };
-  
-  function submitForm(event) {
-    event.preventDefault(); // Empêche la page de se recharger
-  
-    // Récupére les données du formulaire
-    const firstName = document.getElementById('firstName').value;
-    const lastName = document.getElementById('lastName').value;
-    const address = document.getElementById('address').value;
-    const city = document.getElementById('city').value;
-    const email = document.getElementById('email').value;
-  
-    // Formate les données dans un objet JSON
-    const contact = {
-      firstName: firstName,
-      lastName: lastName,
-      address: address,
-      city: city,
-      email: email
-    };
-    const products = listIDs(); // récupérer la liste des IDs de la commande
+// ---------------------------------------------------------------
+// PERMET DE RECUPERER LES DONNES ET DE LES STOCKER
+// ---------------------------------------------------------------  
+function submitForm(event) {
+  event.preventDefault(); // Empêche la page de se recharger
+
+  // Récupére les données du formulaire
+  const firstName = document.getElementById('firstName').value;
+  const lastName = document.getElementById('lastName').value;
+  const address = document.getElementById('address').value;
+  const city = document.getElementById('city').value;
+  const email = document.getElementById('email').value;
+
+  // Formate les données dans un objet JSON
+  const contact = {
+    firstName: firstName,
+    lastName: lastName,
+    address: address,
+    city: city,
+    email: email
+  };
+    const products = ListIds(); // récupérer la liste des IDs de la commande
     
     const order = { contact, products }; // objets à envoyer au serveur
   
-    // Envoi les données à votre API avec fetch()
+    // Envoi les données à l'API 
     fetch('http://localhost:3000/api/products/order', {
       method: 'POST',
       headers: {
@@ -291,17 +331,20 @@ function addFormSubmitListener() {
     })
       .then(response => response.json())
       .then(data => {
-        // Traiter la réponse de l'API
+        // Traite la réponse de l'API
         const orderId = data.orderId;
-        // Rediriger l'utilisateur vers la page de confirmation
+        // Redirige l'utilisateur vers la page de confirmation
         window.location.href = `confirmation.html?orderId=${orderId}`;
       })
       .catch(error => {
         console.error('Erreur lors de l\'envoi de la commande:', error);
       });
   };
-  
-function listIDs(arrayKanap) {
+
+// ---------------------------------------------------------------
+// PERMET DE CREER UNE LISTE DES IDS
+// ---------------------------------------------------------------
+function ListIds(arrayKanap) {
     let ids = [];
     if (Array.isArray(arrayKanap)) {
       arrayKanap.forEach(kanap => {
@@ -311,12 +354,18 @@ function listIDs(arrayKanap) {
     return ids;
   };
   
-  
+// ---------------------------------------------------------------
+// PEREMT DE VERIFIER SI LE PANIER EST VIDE 
+// ---------------------------------------------------------------
 function theBasketIsEmpty() {
     const parent = document.querySelector('#mess-oblig');
-    parent.style.cssText = 'color: #82FA58; font-weight: bold; border-style: solid; border-color: #E3F6CE; background: #3d4c68; padding: 10px; border-radius: 15px; text-align: center;';
-    parent.textContent = 'Votre panier est vide';
+      parent.style.cssText = 'color: #82FA58; font-weight: bold; border-style: solid; border-color: #E3F6CE; background: #3d4c68; padding: 10px; border-radius: 15px; text-align: center;';
+      parent.textContent = 'Votre panier est vide';
 };
+
+// ---------------------------------------------------------------
+// PERMET DE CONTROLER LE REMPLISSAGE DE LA PARTIE MAIL
+// ---------------------------------------------------------------
  const controlEmail = () => {
     const mailElement = document.querySelector("#email");
 	const regex = new RegExp(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/i);
@@ -341,11 +390,17 @@ function theBasketIsEmpty() {
 
 };
 
+// ---------------------------------------------------------------
+// PERMET DE CONTROLER LE REMPLISSAGE DU FORMULAIRE 
+// ---------------------------------------------------------------
 function testValidityForm(parent) {
 	let textTemp = parent.value;
     const newStr = textTemp.replace(/[^A-Za-z\s]/g, "");
         parent.value = newStr;
 };
+// ---------------------------------------------------------------
+// PERMET DE RATTACHER LE FORMULAIRE A DES EVENTLISTENER 
+// ---------------------------------------------------------------
 const orderButton = () => {
         const orderButtonSelector = document.querySelector("#order");
             orderButtonSelector.addEventListener('click', (order) => submitForm(order));
@@ -356,8 +411,9 @@ const orderButton = () => {
         const parent3 = document.getElementById("address");
             parent3.addEventListener("keyup", () => testValidityForm(parent3))
 };
-
-// Appel et stocke les autres fonctions 
+// ---------------------------------------------------------------
+// APPEL ET STOCK LES AUTRE FONCTIONS 
+// ---------------------------------------------------------------
 async function main () {
     try {
         const cartItems = JSON.parse(localStorage.getItem('cartItems') || '[]');
@@ -385,7 +441,7 @@ async function main () {
         
         displayCartFull(arrayKanaps);
 
-        listIDs(arrayKanaps);
+        ListIds(arrayKanaps);
 
         orderButton(arrayKanaps);
     } catch (error) {
