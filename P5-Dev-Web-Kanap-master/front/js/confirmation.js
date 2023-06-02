@@ -5,4 +5,4 @@ console.log(orderId);
 document.getElementById('orderId').textContent = orderId;
 
 // Vide le localStorage
-// window.localStorage.clear();
+window.localStorage.clear();
