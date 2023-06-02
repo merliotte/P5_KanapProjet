@@ -1,3 +1,6 @@
+// ---------------------------------------------------------------
+// PERMET DE RECUPERER LES DONNEES DE L'API ET DE CREER UN ITEM HTML
+// ---------------------------------------------------------------
 const url = "http://localhost:3000/api/products"; 
 
  fetch(url)

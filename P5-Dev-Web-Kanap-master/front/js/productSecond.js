@@ -1,3 +1,6 @@
+// ---------------------------------------------------------------
+// PERMET DE RECUPERER LES INFORMATIONS DES KANAPS
+// ---------------------------------------------------------------
 async function fetchKanapData() {
 	try {
   	const kanapId = new URL(window.location).searchParams.get('id');
@@ -8,7 +11,7 @@ async function fetchKanapData() {
   	console.error(error.message);
     window.alert (" La Connexion a échoué !");
   }
-}
+};
 
 function fillHtmlWithCanapData(data) {
 	const arrayId = [
@@ -40,14 +43,14 @@ function fillHtmlWithCanapData(data) {
             select.innerHTML += `<option value="${color}">${color}</option>`;
 
         });  
-}
+};
 
 function isCanapInLocalStorage(canapId) {
   const cartItems = JSON.parse(window.localStorage.getItem("cartItems") || "[]");
   return cartItems.findIndex((item) => item.id === canapId);
   
 };
-
+//  PERMET DE STOCKER LES ITEMS DANS LE LOCALSTORAGE
 function addItemsIntoStorage(canapId) {
   const saveColor = document.getElementById("colors");
   const quantityKanap = document.getElementById("quantity");
@@ -72,12 +75,12 @@ function addItemsIntoStorage(canapId) {
   if (newKanapData.quantity !== parseInt(quantityKanap.value)) {
     console.log("La quantité a été limitée à 100.");
   }
-}
+};
 function controlQuantity() {
 	const quantity = document.querySelector('#quantity').value;
     if (quantity < 0 ) document.querySelector('#quantity').value = 0;
     if (quantity > 100) document.querySelector('#quantity').value = 100;
-}
+};
 
 async function main() {
     try {
